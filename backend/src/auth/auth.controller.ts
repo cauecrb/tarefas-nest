@@ -1,13 +1,18 @@
 import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }
 
+    /*    @Post('register')
+        async register(@Body('email') email: string, @Body('password') password: string) {
+            return this.authService.register(email, password);
+        } */
     @Post('register')
-    async register(@Body('email') email: string, @Body('password') password: string) {
-        return this.authService.register(email, password);
+    async register(@Body() registerUserDto: RegisterUserDto) {
+        return this.authService.register(registerUserDto); // Passar o DTO como único argumento
     }
 
     @Post('login')

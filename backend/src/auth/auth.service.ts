@@ -25,12 +25,13 @@ export class AuthService {
     }
 } */
 
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -53,8 +54,23 @@ export class AuthService {
         return { access_token: this.jwtService.sign(payload) };
     }
 
-    async register(email: string, password: string): Promise<User> {
+    async register(registerUserDto: RegisterUserDto): Promise<User> {
+        const { email, password } = registerUserDto;
+
+        // Verificar se o usuário já existe
+        const existingUser = await this.userRepository.findOne({ where: { email } });
+        if (existingUser) {
+            throw new ConflictException('Email já cadastrado');
+        }
+
+        // Criptografar a senha
         const hashedPassword = await bcrypt.hash(password, 10);
-        return this.userRepository.save({ email, password: hashedPassword });
+        // Criar usuário
+        const user = this.userRepository.create({
+            email,
+            password: hashedPassword,
+        });
+
+        return this.userRepository.save(user);
     }
 }
