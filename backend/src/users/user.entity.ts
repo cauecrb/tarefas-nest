@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { Task } from '../tasks/tasks.entity'
+import { Task } from '../tasks/task.entity'
 
 
 @Entity()

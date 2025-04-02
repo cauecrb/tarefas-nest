@@ -13,6 +13,7 @@ const LoginForm = () => {
         e.preventDefault();
         try {
             const response = await axios.post('/auth/login', { email, password });
+            console.log('Token recebido:', response.data.accessToken);
             localStorage.setItem('token', response.data.accessToken);
             navigate('/dashboard'); // Redireciona após login
         } catch (err: any) {
