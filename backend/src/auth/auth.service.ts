@@ -25,13 +25,14 @@ export class AuthService {
     }
 } */
 
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -46,16 +47,31 @@ export class AuthService {
         if (user && (await user.validatePassword(password))) {
             return user;
         }
+
         return null;
     }
 
-    async login(user: User) {
+    async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
+        const { email, password } = loginUserDto;
+        const user = await this.userRepository.findOne({ where: { email } });
+
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            throw new UnauthorizedException('Credenciais inválidas');
+        }
+
         const payload = { email: user.email, sub: user.id };
-        return { access_token: this.jwtService.sign(payload) };
+        return {
+            accessToken: this.jwtService.sign(payload),
+        };
+
     }
 
     async register(registerUserDto: RegisterUserDto): Promise<User> {
-        const { email, password } = registerUserDto;
+        const { name, email, password, confirmPassword } = registerUserDto;
+
+        if (password !== confirmPassword) {
+            throw new BadRequestException('As senhas não coincidem');
+        }
 
         // Verificar se o usuário já existe
         const existingUser = await this.userRepository.findOne({ where: { email } });
@@ -67,6 +83,7 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(password, 10);
         // Criar usuário
         const user = this.userRepository.create({
+            name,
             email,
             password: hashedPassword,
         });

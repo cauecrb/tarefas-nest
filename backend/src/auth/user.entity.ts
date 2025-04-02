@@ -8,6 +8,9 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column({ unique: true, default: 'Sem nome' })
+    name: string;
+
     @Column({ unique: true })
     email: string;
 
