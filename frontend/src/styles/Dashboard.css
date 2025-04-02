@@ -436,6 +436,132 @@
     margin-bottom: 15px;
 }
 
+/* Paginação */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 10px;
+}
+
+.pagination-btn {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #555;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-number {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    background-color: #f0f0f0;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.pagination-number:hover {
+    background-color: #e0e0e0;
+}
+
+.pagination-number.active {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.pagination-info {
+    text-align: center;
+    margin-top: 15px;
+    color: #888;
+    font-size: 14px;
+}
+
+/* Notificações de vencimento */
+.due-notification {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.8;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.8;
+    }
+}
+
+.due-notification.overdue {
+    background-color: #ffebee;
+    color: #d32f2f;
+    border-left: 3px solid #d32f2f;
+}
+
+.due-notification.due-today {
+    background-color: #fff8e1;
+    color: #ff8f00;
+    border-left: 3px solid #ff8f00;
+}
+
+.due-notification.due-soon {
+    background-color: #e8f5e9;
+    color: #388e3c;
+    border-left: 3px solid #388e3c;
+}
+
+/* Borda colorida para os cards com base na urgência */
+.task-card.overdue {
+    border-left: 4px solid #d32f2f;
+}
+
+.task-card.due-today {
+    border-left: 4px solid #ff8f00;
+}
+
+.task-card.due-soon {
+    border-left: 4px solid #388e3c;
+}
+
+/* Ajuste para o layout do task-meta quando há notificação */
+.task-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     .task-form {
@@ -459,6 +585,17 @@
     .create-btn,
     .logout-btn {
         flex: 1;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .pagination-numbers {
+        order: -1;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }
 
@@ -485,5 +622,21 @@
 
     .task-header h3 {
         max-width: 100%;
+    }
+
+    .pagination-number {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+
+    .pagination-btn {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .due-notification {
+        width: 100%;
+        text-align: center;
     }
 }

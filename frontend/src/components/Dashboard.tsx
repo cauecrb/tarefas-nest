@@ -17,9 +17,11 @@ const Dashboard = () => {
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [filter, setFilter] = useState('all');
     const [showForm, setShowForm] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const tasksPerPage = 10;
+
     const navigate = useNavigate();
 
-    // Buscar tarefas ao carregar
     useEffect(() => {
         const fetchTasks = async () => {
             try {
@@ -32,7 +34,6 @@ const Dashboard = () => {
         fetchTasks();
     }, [navigate]);
 
-    // Criar tarefa
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -45,7 +46,6 @@ const Dashboard = () => {
         }
     };
 
-    // Excluir tarefa
     const handleDelete = async (id: number) => {
         if (window.confirm('Tem certeza que deseja excluir esta tarefa?')) {
             try {
@@ -57,7 +57,6 @@ const Dashboard = () => {
         }
     };
 
-    // Atualizar tarefa
     const handleUpdate = async () => {
         if (!editingTask) return;
         try {
@@ -69,11 +68,61 @@ const Dashboard = () => {
         }
     };
 
-    // Filtrar tarefas
     const filteredTasks = tasks.filter(task => {
         if (filter === 'all') return true;
         return task.status.toLowerCase() === filter;
     });
+
+    const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+
+    const currentTasks = filteredTasks.slice(
+        (currentPage - 1) * tasksPerPage,
+        currentPage * tasksPerPage
+    );
+
+    const nextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const goToPage = (pageNumber: number) => {
+        setCurrentPage(pageNumber);
+    };
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter]);
+
+    const getTaskUrgency = (dueDate: string): string => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const threeDaysFromNow = new Date(today);
+        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+
+        const taskDueDate = new Date(dueDate);
+        taskDueDate.setHours(0, 0, 0, 0);
+
+        if (taskDueDate < today) {
+            return 'overdue';
+        } else if (taskDueDate.getTime() === today.getTime()) {
+            return 'due-today';
+        } else if (taskDueDate <= threeDaysFromNow) {
+            return 'due-soon';
+        }
+
+        return '';
+    };
 
     return (
         <div className="app-container">
@@ -95,7 +144,6 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Formulário de Criação */}
             {showForm && (
                 <div className="form-container">
                     <form onSubmit={handleCreate} className="task-form">
@@ -137,7 +185,6 @@ const Dashboard = () => {
                 </div>
             )}
 
-            {/* Filtros */}
             <div className="filter-container">
                 <span>Filtrar por:</span>
                 <div className="filter-buttons">
@@ -168,7 +215,6 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Lista de Tarefas */}
             {filteredTasks.length === 0 ? (
                 <div className="empty-state">
                     <p>Nenhuma tarefa encontrada.</p>
@@ -179,41 +225,89 @@ const Dashboard = () => {
                     )}
                 </div>
             ) : (
-                <div className="task-grid">
-                    {filteredTasks.map(task => (
-                        <div key={task.id} className="task-card">
-                            <div className="task-header">
-                                <h3>{task.title}</h3>
-                                <span className={`task-status status-${task.status.toLowerCase().replace(' ', '-')}`}>
-                                    {task.status}
-                                </span>
+                <>
+                    <div className="task-grid">
+                        {currentTasks.map(task => {
+                            const urgency = getTaskUrgency(task.dueDate);
+
+                            return (
+                                <div key={task.id} className={`task-card ${urgency}`}>
+                                    <div className="task-header">
+                                        <h3>{task.title}</h3>
+                                        <span className={`task-status status-${task.status.toLowerCase().replace(' ', '-')}`}>
+                                            {task.status}
+                                        </span>
+                                    </div>
+                                    <div className="task-body">
+                                        <p>{task.description || "Sem descrição"}</p>
+                                    </div>
+                                    <div className="task-meta">
+                                        <p>Vencimento: {new Date(task.dueDate).toLocaleDateString()}</p>
+                                        {urgency && (
+                                            <div className={`due-notification ${urgency}`}>
+                                                {urgency === 'overdue' && 'Atrasada!'}
+                                                {urgency === 'due-today' && 'Vence hoje!'}
+                                                {urgency === 'due-soon' && 'Vence em breve!'}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="task-actions">
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => setEditingTask(task)}
+                                        >
+                                            Editar
+                                        </button>
+                                        <button
+                                            className="delete-btn"
+                                            onClick={() => handleDelete(task.id)}
+                                        >
+                                            Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {totalPages > 1 && (
+                        <div className="pagination">
+                            <button
+                                onClick={prevPage}
+                                disabled={currentPage === 1}
+                                className="pagination-btn"
+                            >
+                                &laquo; Anterior
+                            </button>
+
+                            <div className="pagination-numbers">
+                                {[...Array(totalPages)].map((_, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => goToPage(index + 1)}
+                                        className={currentPage === index + 1 ? 'pagination-number active' : 'pagination-number'}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                ))}
                             </div>
-                            <div className="task-body">
-                                <p>{task.description || "Sem descrição"}</p>
-                            </div>
-                            <div className="task-meta">
-                                <p>Vencimento: {new Date(task.dueDate).toLocaleDateString()}</p>
-                            </div>
-                            <div className="task-actions">
-                                <button
-                                    className="edit-btn"
-                                    onClick={() => setEditingTask(task)}
-                                >
-                                    Editar
-                                </button>
-                                <button
-                                    className="delete-btn"
-                                    onClick={() => handleDelete(task.id)}
-                                >
-                                    Excluir
-                                </button>
-                            </div>
+
+                            <button
+                                onClick={nextPage}
+                                disabled={currentPage === totalPages}
+                                className="pagination-btn"
+                            >
+                                Próxima &raquo;
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    )}
+
+                    <div className="pagination-info">
+                        Mostrando {(currentPage - 1) * tasksPerPage + 1} a {Math.min(currentPage * tasksPerPage, filteredTasks.length)} de {filteredTasks.length} tarefas
+                    </div>
+                </>
             )}
 
-            {/* Modal de Edição */}
             {editingTask && (
                 <div className="modal-overlay">
                     <div className="modal">
