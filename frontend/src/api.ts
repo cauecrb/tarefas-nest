@@ -13,7 +13,7 @@ export default axios; */
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3000', // Adjust to your backend URL
+    baseURL: import.meta.env.VITE_API_URL, // Adjust to your backend URL
 });
 
 // Add a request interceptor to include the token in all requests
