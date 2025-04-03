@@ -13,7 +13,7 @@ export default axios; */
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'tarefas-nest-production.up.railway.app', // Adjust to your backend URL
+    baseURL: 'https://tarefas-nest-production.up.railway.app', // Adjust to your backend URL
 });
 
 // Add a request interceptor to include the token in all requests
