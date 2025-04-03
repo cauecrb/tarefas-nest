@@ -6,7 +6,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: 'https://tarefas-nest-git-deploy-cauecrbs-projects.vercel.app/', // Your frontend URL
+    origin: 'https://tarefas-nest.vercel.app/', // Your frontend URL
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
